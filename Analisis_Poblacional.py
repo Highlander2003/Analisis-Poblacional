@@ -18,6 +18,7 @@ import json
 
 # Ruta del archivo CSV original
 csv_path = "unpopulation_dataportal_20250604134916.csv"
+
 # FUNCIÓN 1: Cargar datos poblacionales desde archivo CSV
 # Lee el archivo CSV con datos de población de la ONU y lo convierte en DataFrame
 df = pd.read_csv(csv_path)
@@ -333,7 +334,6 @@ html_final = """
         }
         
         .stSelectbox select:focus {
-            outline: none;
             border-color: #3B82F6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
@@ -859,7 +859,7 @@ html_final = """
                                                 <label>Selecciona un país</label>
                                                 <select id="regionFilter">
                                                     <option value="All">Todos</option>
-                                                    """ + ''.join([f'<option value="{pais}">{pais}</option>' for pais in sorted(df_processed['Location'].dropna().unique())[:50]]) + """
+                                                    """ + ''.join([f'<option value="{pais}">{pais}</option>' for pais in sorted(df_processed['Location'].dropna().unique())]) + """
                                                 </select>
                                             </div>
                                         </div>
