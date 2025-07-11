@@ -92,12 +92,39 @@ print(f"Años disponibles: {min(anios)} - {max(anios)}")
 print(f"Países disponibles: {len(paises)-1}")
 print(f"Datos procesados: {len(df_processed)} registros")
 
-# FUNCIÓN 9: Exportar datos procesados a formato JSON
-# Convierte el DataFrame procesado a JSON para uso en JavaScript del dashboard
+# FUNCIÓN 8.1: Calcular población total mundial para 2024
+# Calcula la población total mundial para el año 2024 para mostrar en el dashboard
+poblacion_2024_data = df_processed[
+    (df_processed['Year'] == 2024) & 
+    (df_processed['Sex'] == 'Both sexes')
+]
+poblacion_total_2024 = poblacion_2024_data['Value'].sum()
+
+# Formatear el número con separadores de miles para mostrar en el HTML
+poblacion_2024_formateada = f"{poblacion_total_2024:,.0f}".replace(",", ".")
+
+print(f"Población mundial total 2024: {poblacion_2024_formateada} personas")
+
+# FUNCIÓN 9: Preparar datos para embeber en HTML
+# Convierte el DataFrame procesado a JSON para embeber directamente en el HTML
 data_json = df_processed.to_json(orient="records")  # Formato: lista de objetos JSON
-# Guarda el archivo JSON que será leído por el frontend web
-with open("poblacion_data.json", "w") as f:
-    f.write(data_json)
+
+# FUNCIÓN 9.1: Preparar listas de países únicos para el selector
+paises_unicos = sorted(df_processed['Location'].dropna().unique().tolist())
+
+# FUNCIÓN 9.2: Preparar años únicos disponibles
+anios_unicos = sorted(df_processed['Year'].dropna().unique().tolist())
+
+# FUNCIÓN 9.3: Calcular métricas adicionales para embeber
+# Total de registros procesados
+total_registros = len(df_processed)
+
+# Rango de años disponible
+anio_minimo = min(anios)
+anio_maximo = max(anios)
+
+# Número de países disponibles
+num_paises = len(paises) - 1  # -1 para excluir 'All'
 
 # FUNCIÓN 10: Generar estructura HTML completa del dashboard interactivo
 # Crea un dashboard web completo con HTML, CSS y JavaScript embebido
@@ -859,8 +886,7 @@ html_final = """
                                                 <label>Selecciona un país</label>
                                                 <select id="regionFilter">
                                                     <option value="All">Todos</option>
-                                                    """ + ''.join([f'<option value="{pais}">{pais}</option>' for pais in sorted(df_processed['Location'].dropna().unique())]) + """
-                                                </select>
+""" + ''.join([f'                                                    <option value="{pais}">{pais}</option>\n' for pais in paises_unicos]) + """                                                </select>
                                             </div>
                                         </div>
                                         <div class="stColumn">
@@ -891,7 +917,7 @@ html_final = """
                             <div class="stColumn" style="max-width: 300px;">
                                 <div class="stMetric">
                                     <div class="metric-label">Población total 2024</div>
-                                    <div class="metric-value" id="totalPopulation">145,474 personas</div>
+                                    <div class="metric-value" id="totalPopulation">""" + poblacion_2024_formateada + """ personas</div>
                                 </div>
                             </div>
                         </div>
@@ -982,18 +1008,28 @@ html_final = """
     </div>
 
     <script>
-        let globalData = [];
+        // DATOS EMBEBIDOS DIRECTAMENTE DESDE PYTHON
+        // Estos datos se generan automáticamente al ejecutar el script de Python
+        const globalData = """ + data_json + """;
         
-        // Cargar datos
-        fetch('poblacion_data.json')
-            .then(response => response.json())
-            .then(data => {
-                globalData = data;
-                console.log('Datos cargados:', data.length, 'registros');
-                console.log('Ejemplo de datos:', data[0]);
-                initializeDashboard();
-            })
-            .catch(error => console.error('Error loading data:', error));
+        // CONSTANTES CALCULADAS DESDE PYTHON
+        const PAISES_DISPONIBLES = """ + str(paises_unicos) + """;
+        const ANIOS_DISPONIBLES = """ + str(anios_unicos) + """;
+        const POBLACION_TOTAL_2024 = '""" + poblacion_2024_formateada + """';
+        const TOTAL_REGISTROS = """ + str(total_registros) + """;
+        const ANIO_MINIMO = """ + str(anio_minimo) + """;
+        const ANIO_MAXIMO = """ + str(anio_maximo) + """;
+        const NUM_PAISES = """ + str(num_paises) + """;
+        
+        console.log('Datos embebidos cargados:', globalData.length, 'registros');
+        console.log('Países disponibles:', PAISES_DISPONIBLES.length);
+        console.log('Años disponibles:', ANIOS_DISPONIBLES.length);
+        console.log('Ejemplo de datos:', globalData[0]);
+        
+        // Inicializar dashboard automáticamente cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
         
         function initializeDashboard() {
             updateCharts();
@@ -1519,6 +1555,7 @@ html_final = """
 </html>
 """
 
+# FUNCIÓN 11: Guardar dashboard HTML independiente
 # Guardar el contenido HTML completo del dashboard en un archivo físico
 # Se especifica encoding="utf-8" para soportar caracteres especiales en español
 with open("dashboard_poblacion.html", "w", encoding="utf-8") as f:
@@ -1526,3 +1563,8 @@ with open("dashboard_poblacion.html", "w", encoding="utf-8") as f:
 
 # Mostrar mensaje de confirmación al usuario indicando que el archivo fue creado exitosamente
 print("✅ Dashboard generado: dashboard_poblacion.html")
+print(f"📊 Datos embebidos: {total_registros:,} registros")
+print(f"🌍 Países incluidos: {num_paises}")
+print(f"📅 Rango temporal: {anio_minimo}-{anio_maximo}")
+print("🚀 El dashboard es completamente independiente y no requiere archivos externos")
+print("💡 Simplemente abre 'dashboard_poblacion.html' en tu navegador para usarlo")
