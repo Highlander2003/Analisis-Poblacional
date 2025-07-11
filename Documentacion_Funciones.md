@@ -106,16 +106,20 @@ print(f"Datos procesados: {len(df_processed)} registros")
 **Ubicación**: Líneas 85-88  
 **Propósito**: Proporciona información sobre el rango temporal y cobertura geográfica de los datos.
 
-### FUNCIÓN 9: Exportar datos a JSON (Líneas 90-95)
+### FUNCIÓN 9: Preparar datos para embeber en HTML (Líneas 110-128)
 ```python
 data_json = df_processed.to_json(orient="records")
-with open("poblacion_data.json", "w") as f:
-    f.write(data_json)
+paises_unicos = sorted(df_processed['Location'].dropna().unique().tolist())
+anios_unicos = sorted(df_processed['Year'].dropna().unique().tolist())
+total_registros = len(df_processed)
+anio_minimo = min(anios)
+anio_maximo = max(anios)
+num_paises = len(paises) - 1
 ```
-**Ubicación**: Líneas 90-95  
-**Propósito**: Convierte el DataFrame procesado a JSON para uso en JavaScript del dashboard.
+**Ubicación**: Líneas 110-128  
+**Propósito**: Prepara los datos procesados y constantes para ser embebidos directamente en el HTML del dashboard, evitando archivos externos.
 
-### FUNCIÓN 10: Generar estructura HTML completa (Líneas 97-1520)
+### FUNCIÓN 10: Generar estructura HTML completa (Líneas 130-1520)
 ```python
 html_final = """
 <!DOCTYPE html>
@@ -123,51 +127,92 @@ html_final = """
 ...
 """
 ```
-**Ubicación**: Líneas 97-1520  
+**Ubicación**: Líneas 130-1520  
 **Propósito**: Crea un dashboard web completo con HTML, CSS y JavaScript embebido.
+
+---
+
+## Datos Embebidos en HTML
+
+### SECCIÓN 1: Datos principales embebidos (Líneas 1013-1022)
+**Ubicación**: Líneas 1013-1022  
+**Elemento**: `const globalData = """ + data_json + """;`  
+**Propósito**: Embebe los datos poblacionales procesados directamente en el HTML como una constante JavaScript.
+
+### SECCIÓN 2: Constantes calculadas embebidas (Líneas 1015-1021)
+```javascript
+const PAISES_DISPONIBLES = [lista de países];
+const ANIOS_DISPONIBLES = [lista de años];
+const POBLACION_TOTAL_2024 = 'población formateada';
+const TOTAL_REGISTROS = número de registros;
+const ANIO_MINIMO = año mínimo;
+const ANIO_MAXIMO = año máximo;
+const NUM_PAISES = número de países;
+```
+**Ubicación**: Líneas 1015-1021  
+**Propósito**: Define constantes JavaScript con valores calculados desde Python para uso en el dashboard.
+
+### SECCIÓN 3: Logs de verificación embebidos (Líneas 1023-1026)
+```javascript
+console.log('Datos embebidos cargados:', globalData.length, 'registros');
+console.log('Países disponibles:', PAISES_DISPONIBLES.length);
+console.log('Años disponibles:', ANIOS_DISPONIBLES.length);
+console.log('Ejemplo de datos:', globalData[0]);
+```
+**Ubicación**: Líneas 1023-1026  
+**Propósito**: Proporciona logs en la consola del navegador para verificar que los datos se cargaron correctamente.
+
+### SECCIÓN 4: Inicialización automática (Líneas 1028-1031)
+```javascript
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDashboard();
+});
+```
+**Ubicación**: Líneas 1028-1031  
+**Propósito**: Inicializa automáticamente el dashboard cuando la página termina de cargar, usando los datos embebidos.
 
 ---
 
 ## Funciones JavaScript del Dashboard
 
-### Función: initializeDashboard() (Líneas 1150-1159)
-**Ubicación**: Líneas 1150-1159  
-**Propósito**: Inicializa el dashboard y establece los event listeners para los controles interactivos.
+### Función: initializeDashboard() (Líneas 1033-1042)
+**Ubicación**: Líneas 1033-1042  
+**Propósito**: Inicializa el dashboard usando los datos embebidos y establece los event listeners para los controles interactivos.
 
-### Función: updateCharts() (Líneas 1264-1281)
-**Ubicación**: Líneas 1264-1281  
-**Propósito**: Actualiza todos los gráficos del dashboard basándose en los filtros seleccionados.
+### Función: updateCharts() (Líneas 1165-1182)
+**Ubicación**: Líneas 1165-1182  
+**Propósito**: Actualiza todos los gráficos del dashboard basándose en los filtros seleccionados, utilizando los datos embebidos.
 
-### Función: updatePyramidChart() (Líneas 1283-1343)
-**Ubicación**: Líneas 1283-1343  
+### Función: updatePyramidChart() (Líneas 1189-1249)
+**Ubicación**: Líneas 1189-1249  
 **Propósito**: Actualiza el gráfico de pirámide poblacional separando hombres y mujeres.
 
-### Función: updatePieChart() (Líneas 1345-1401)
-**Ubicación**: Líneas 1345-1401  
+### Función: updatePieChart() (Líneas 1255-1311)
+**Ubicación**: Líneas 1255-1311  
 **Propósito**: Actualiza el gráfico circular de distribución por categorías de edad.
 
-### Función: updateTrendChart1() (Líneas 1403-1447)
-**Ubicación**: Líneas 1403-1447  
+### Función: updateTrendChart1() (Líneas 1308-1357)
+**Ubicación**: Líneas 1308-1357  
 **Propósito**: Actualiza el gráfico de tendencia temporal por categorías de edad.
 
-### Función: updateTrendChart2() (Líneas 1449-1492)
-**Ubicación**: Líneas 1449-1492  
+### Función: updateTrendChart2() (Líneas 1363-1414)
+**Ubicación**: Líneas 1363-1414  
 **Propósito**: Actualiza el gráfico de tendencia porcentual por categorías.
 
-### Función: updateVariationChart1() (Líneas 1494-1545)
-**Ubicación**: Líneas 1494-1545  
+### Función: updateVariationChart1() (Líneas 1420-1476)
+**Ubicación**: Líneas 1420-1476  
 **Propósito**: Actualiza el gráfico de variación poblacional por rangos de edad específicos.
 
-### Función: updateVariationChart2() (Líneas 1547-1597)
-**Ubicación**: Líneas 1547-1597  
+### Función: updateVariationChart2() (Líneas 1482-1538)
+**Ubicación**: Líneas 1482-1538  
 **Propósito**: Actualiza el gráfico de variación poblacional por categorías amplias.
 
-### Función: updateMetrics() (Líneas 1599-1610)
-**Ubicación**: Líneas 1599-1610  
+### Función: updateMetrics() (Líneas 1540-1551)
+**Ubicación**: Líneas 1540-1551  
 **Propósito**: Actualiza las métricas mostradas en el dashboard.
 
-### Función: updateDualRange() (Líneas 1177-1211)
-**Ubicación**: Líneas 1177-1211  
+### Función: updateDualRange() (Líneas 1081-1115)
+**Ubicación**: Líneas 1081-1115  
 **Propósito**: Controla el slider dual para selección de rango de años.
 
 ---
@@ -229,25 +274,49 @@ html_final = """
 
 ## Funciones de Utilidad
 
-### updateSliderDisplay() (Líneas 1226-1236)
-**Ubicación**: Líneas 1226-1236  
+### updateSliderDisplay() (Líneas 1128-1136)
+**Ubicación**: Líneas 1128-1136  
 **Propósito**: Actualiza la visualización de los valores de los deslizadores.
 
-### updateSliderProgress() (Líneas 1238-1250)
-**Ubicación**: Líneas 1238-1250  
+### updateSliderProgress() (Líneas 1139-1151)
+**Ubicación**: Líneas 1139-1151  
 **Propósito**: Actualiza la barra de progreso visual de los deslizadores.
 
-### animateValueChange() (Líneas 1213-1224)
-**Ubicación**: Líneas 1213-1224  
+### animateValueChange() (Líneas 1117-1125)
+**Ubicación**: Líneas 1117-1125  
 **Propósito**: Proporciona animaciones visuales cuando cambian los valores de los controles.
 
 ---
 
 ## Archivo de Salida
 
-### dashboard_poblacion.html (Líneas 1522-1529)
-**Ubicación**: Líneas 1522-1529  
-**Propósito**: Archivo HTML final que contiene el dashboard interactivo completo generado por el código Python.
+### dashboard_poblacion.html (Líneas 1553-1571)
+**Ubicación**: Líneas 1553-1571  
+**Propósito**: Archivo HTML final que contiene el dashboard interactivo completo generado por el código Python, incluyendo todos los datos embebidos directamente en el HTML.
+
+---
+
+## Ventajas de los Datos Embebidos
+
+### 1. **Portabilidad Completa**
+- El archivo HTML generado es completamente autónomo
+- No requiere archivos externos (JSON, CSS, JS separados)
+- Funciona sin servidor web, directamente desde el navegador
+
+### 2. **Rendimiento Optimizado**
+- Los datos se cargan instantáneamente al abrir la página
+- No hay latencia de red para cargar archivos externos
+- Inicialización más rápida del dashboard
+
+### 3. **Simplicidad de Distribución**
+- Un solo archivo HTML contiene todo el dashboard
+- Fácil de compartir, enviar por email o subir a cualquier hosting
+- No hay dependencias de rutas relativas o archivos perdidos
+
+### 4. **Seguridad Mejorada**
+- No hay solicitudes HTTP externas que puedan fallar
+- Los datos están protegidos dentro del archivo HTML
+- Funciona offline sin problemas
 
 ---
 
@@ -255,9 +324,31 @@ html_final = """
 
 El código sigue una estructura modular dividida en:
 
-1. **Procesamiento de datos** (Líneas 1-95): Carga, limpieza y preparación de datos
-2. **Generación HTML** (Líneas 97-1520): Creación del dashboard web completo
-3. **Funciones JavaScript** (Líneas 1150-1610): Interactividad y actualización de gráficos
-4. **Guardado de archivos** (Líneas 1522-1529): Exportación del dashboard final
+1. **Procesamiento de datos** (Líneas 1-128): 
+   - Carga, limpieza y preparación de datos
+   - Generación de constantes y variables para embeber
+   - Formateo de datos para integración directa en HTML
 
-El dashboard resultante es completamente interactivo y permite analizar datos poblacionales de múltiples maneras a través de filtros, deslizadores y visualizaciones dinámicas.
+2. **Generación HTML con datos embebidos** (Líneas 130-1520): 
+   - Creación del dashboard web completo
+   - Embebido directo de datos JSON en JavaScript
+   - Integración de constantes calculadas desde Python
+   - CSS y JavaScript completamente integrados
+
+3. **Funciones JavaScript con datos internos** (Líneas 1033-1551): 
+   - Interactividad usando datos embebidos (sin archivos externos)
+   - Actualización de gráficos con acceso directo a datos
+   - Control de filtros y deslizadores
+   - Inicialización automática con datos precargados
+
+4. **Guardado de archivo único** (Líneas 1553-1571): 
+   - Exportación del dashboard como archivo HTML autónomo
+   - Inclusion completa de datos, estilos y funcionalidad
+   - Sin dependencias externas
+
+### Flujo de Datos Embebidos:
+```
+Python DataFrame → JSON String → HTML Template → JavaScript Const → Plotly Charts
+```
+
+El dashboard resultante es completamente autónomo, portable y permite analizar datos poblacionales de múltiples maneras sin requerir archivos externos, servidores web o conexión a internet.
